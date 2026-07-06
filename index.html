@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Booster - Instalador Firefox</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff9500, #ff6b35);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #fff, #ff9500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        p { color: rgba(255,255,255,0.6); margin-bottom: 30px; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #ff9500, #ff6b35);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,149,0,0.4);
+        }
+        .warning {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,149,0,0.1);
+            border: 1px solid rgba(255,149,0,0.3);
+            border-radius: 10px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🦊</div>
+        <h1>Roblox Booster</h1>
+        <p>Extensión de optimización para Firefox</p>
+        
+        <button class="btn" onclick="installExtension()">
+            <span>🔧</span> Instalar Extensión
+        </button>
+        
+        <div class="warning">
+            ⚠️ Asegúrate de usar Firefox. Se abrirá el diálogo de instalación.
+        </div>
+    </div>
+
+    <script>
+        // URL del XPI (se genera automáticamente en GitHub Pages)
+        const XPI_URL = window.location.href.replace(/\/$/, '') + '/roblox-booster.xpi';
+        
+        function installExtension() {
+            if (typeof InstallTrigger !== 'undefined') {
+                // Firefox con InstallTrigger
+                InstallTrigger.install({
+                    'Roblox Booster': XPI_URL
+                });
+            } else {
+                // Descarga directa como fallback
+                window.open(XPI_URL, '_blank');
+            }
+        }
+    </script>
+</body>
+</html>
