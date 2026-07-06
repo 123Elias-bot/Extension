@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Roblox Booster</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { width: 380px; min-height: 500px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); font-family: 'Segoe UI', system-ui, sans-serif; color: #fff; }
+        .header { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 20px; text-align: center; }
+        .logo { width: 60px; height: 60px; background: linear-gradient(135deg, #e94560, #ff6b6b); border-radius: 15px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 28px; }
+        h2 { font-size: 20px; background: linear-gradient(90deg, #fff, #e94560); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; }
+        .stats-container { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; text-align: center; }
+        .stat-icon { font-size: 24px; margin-bottom: 8px; }
+        .stat-label { font-size: 11px; color: rgba(255,255,255,0.6); text-transform: uppercase; }
+        .stat-value { font-size: 14px; font-weight: 600; margin-top: 4px; }
+        .buttons-container { padding: 0 15px 15px; }
+        .btn { width: 100%; padding: 14px 20px; margin-bottom: 10px; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; }
+        .btn-primary { background: linear-gradient(135deg, #e94560, #ff6b6b); }
+        .btn-secondary { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+        .btn-success { background: linear-gradient(135deg, #00d9ff, #00a8e8); }
+        .status-container { margin: 0 15px 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 12px; border-left: 3px solid #e94560; }
+        .status-header { font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
+        #log { font-family: monospace; font-size: 11px; color: rgba(255,255,255,0.8); max-height: 100px; overflow-y: auto; }
+        .footer { padding: 15px; text-align: center; font-size: 11px; color: rgba(255,255,255,0.4); border-top: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🎮</div>
+        <h2>Roblox Booster</h2>
+        <div class="subtitle">Optimización de rendimiento</div>
+    </div>
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">💻</div>
+            <div class="stat-label">Sistema</div>
+            <div class="stat-value" id="osInfo">Detectando...</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-label">Estado</div>
+            <div class="stat-value" style="color: #00ff88;">Activo</div>
+        </div>
+    </div>
+    <div class="buttons-container">
+        <button class="btn btn-primary" id="checkSystem"><span>🔍</span> Analizar Sistema</button>
+        <button class="btn btn-success" id="openGameMode"><span>🚀</span> Activar Game Mode</button>
+        <button class="btn btn-secondary" id="openGraphics"><span>🎨</span> Optimizar Gráficos</button>
+    </div>
+    <div class="status-container">
+        <div class="status-header">📋 Registro de Actividad</div>
+        <div id="log">Esperando acción...</div>
+    </div>
+    <div class="footer">v1.0 • Optimizado para Roblox</div>
+    <script src="popup.js"></script>
+</body>
+</html>
