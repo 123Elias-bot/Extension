@@ -1,0 +1,53 @@
+name: Build and Deploy Extension
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Build XPI from extension source
+        run: |
+          echo "📦 Construyendo archivo XPI..."
+          
+          # Verificar que existen los archivos fuente
+          if [ -d "extension" ]; then
+            cd extension
+            
+            # Crear el archivo XPI (ZIP con extensión .xpi)
+            zip -r ../roblox-booster.xpi *
+            
+            cd ..
+            echo "✅ XPI creado exitosamente"
+            ls -lh roblox-booster.xpi
+          else
+            echo "❌ Error: No se encontró la carpeta 'extension'"
+            exit 1
+          fi
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
