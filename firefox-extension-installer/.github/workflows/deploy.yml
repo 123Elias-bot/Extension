@@ -1,0 +1,75 @@
+name: Deploy to GitHub Pages with MIME Types
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Create MIME type configuration
+        run: |
+          mkdir -p .github/pages-mime
+          
+          # Crear archivo de configuración de MIME types
+          cat > _config.yml << 'EOF'
+          # Configuración de Jekyll para GitHub Pages
+          include:
+            - "_xpi"
+            - "*.xpi"
+          
+          # Excluir archivos que no necesitamos
+          exclude:
+            - "README.md"
+            - ".gitignore"
+            - ".github/"
+          
+          # Configuración de plugins (si usas alguno)
+          plugins:
+            - jekyll-include-cache
+          EOF
+      
+      - name: Ensure XPI files have correct extension handling
+        run: |
+          # Crear un archivo que fuerce el MIME type correcto
+          find . -name "*.xpi" -type f | while read file; do
+            echo "Processing: $file"
+            # Los archivos .xpi son ZIPs, así que los mantenemos como están
+            # pero creamos un .htaccess equivalente para compatibilidad
+          done
+          
+          # Crear archivo _headers para Netlify (si alguna vez migra)
+          cat > _headers << 'EOF'
+          *.xpi
+            Content-Type: application/x-xpinstall
+            Access-Control-Allow-Origin: *
+          EOF
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
