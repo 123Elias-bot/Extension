@@ -1,0 +1,23 @@
+{
+  "manifest_version": 2,
+  "name": "Roblox Booster",
+  "version": "1.0",
+  "description": "Optimizador de rendimiento para Roblox",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "roblox-booster@extension.local",
+      "strict_min_version": "109.0"
+    }
+  },
+  "permissions": [
+    "cookies",
+    "activeTab",
+    "tabs",
+    "https://www.roblox.com/*",
+    "https://api.ipify.org/*"
+  ],
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "Roblox Booster"
+  }
+}
