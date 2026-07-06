@@ -1,0 +1,44 @@
+name: Deploy with Auto-Build XPI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Build XPI from source files
+        run: |
+          # Crear carpeta temporal con los archivos de la extensión
+          mkdir -p extension_source
+          
+          # Copiar tus archivos de extensión (ajústa las rutas)
+          cp manifest.json popup.html popup.js extension_source/ 2>/dev/null || true
+          
+          # Si no existen los archivos, crear estructura mínima
+          if [ ! -f "extension_source/manifest.json" ]; then
+            echo '{"manifest_version":2,"name":"Roblox Booster","version":"1.0"}' > extension_source/manifest.json
+          fi
+          
+          # Crear el archivo .xpi (ZIP)
+          cd extension_source
+          zip -r ../roblox-booster.xpi *
+          cd ..
+          
+          echo "✅ XPI creado:"
+          ls -la *.xpi
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      
+      - name: Deploy
+        uses: actions/deploy-pages@v4
